@@ -1,8 +1,10 @@
 const todoForm = document.getElementById("todo-form");
 const todoInput = document.getElementById("todo-input");
+const todoDeadlineInput = document.getElementById("todo-date")
 const todoList = document.getElementById("todo-list");
 
-const todos = JSON.parse(localStorage.getItem("todos")) || [];
+
+let todos = JSON.parse(localStorage.getItem("todos")) || [];
 
 const saveToLocalStorage = () => {
     localStorage.setItem("todos", JSON.stringify(todos));
@@ -12,6 +14,10 @@ todoForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const inputValue = todoInput.value.trim();
+    const todoDeadline = todoDeadlineInput.value;
+    console.log(todoDeadline);
+
+
     if (inputValue === "") return;
 
     console.log(inputValue);
@@ -19,7 +25,8 @@ todoForm.addEventListener("submit", (e) => {
     const newTodo = {
         id: Date.now(),
         text: inputValue,
-        completed: false
+        completed: false,
+        deadline:todoDeadline
     };
     if (todoInput.value.trim() !== "") {
         todoInput.value = "";
@@ -36,7 +43,7 @@ todoForm.addEventListener("submit", (e) => {
       todos.forEach((todo) => {
           const li = document.createElement("li");
           li.className = "todo-item"
-         li.innerHTML = `<span>${todo.text}</span>
+         li.innerHTML = `<span>${todo.text} - ${todo.deadline}</span>
           <div class="actions">
              <button class="btn-check">done</button>
            <button class="btn-delete">remove</button>
@@ -47,25 +54,22 @@ todoForm.addEventListener("submit", (e) => {
         todoList.appendChild(li);
     });
 };
-renderTodos()
 
 
-todoList.addEventListener("click", (e) => {
+const deleteBtnClickHandler = (id) => {
+    todos = todos.filter((todo) => todo.id !== id)
+    saveToLocalStorage();
+    renderTodos();
+}
 
-    if (e.target.classList.contains("btn-delete")) {
-        const todoText = e.target.closest("li").querySelector("span").innerText;
-        const index = todos.findIndex(todo => todo.text === todoText);
-        if (index > -1) { todos.splice(index, 1); }
-        saveToLocalStorage();
-        renderTodos();
-    }
-    if (e.target.classList.contains("btn-check")) {
-        const span = e.target.closest("li").querySelector("span");
-        if (span.style.textDecoration === "line-through") {
-            span.style.textDecoration = "none";
-        } else {
-            span.style.textDecoration = "line-through";
+const doneBtnClickHandler = (id) => {
+    todos = todos.map((todo)=>{
+        if (todo.id === id){
+            return{...todo,completed:!todo.completed};
         }
-    }
-});
+        return todo
+    })
 
+    saveToLocalStorage();
+    renderTodos();
+}
